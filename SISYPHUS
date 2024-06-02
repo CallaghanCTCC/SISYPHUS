@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Link Validator</title>
+</head>
+<body>
+    <h1>YouTube Link Validator</h1>
+    <div id="links-container">
+        <!-- Generated links will be inserted here -->
+    </div>
+
+    <script>
+        function randomCharacter() {
+            const characters = [
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                '-', '_'
+            ];
+            return characters[Math.floor(Math.random() * characters.length)];
+        }
+
+        function generateRandomString(length) {
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += randomCharacter();
+            }
+            return result;
+        }
+
+        function validateYouTubeLink(link, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `/validate_youtube_id?video_id=${link.split('=')[1]}`, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    callback(response.valid);
+                }
+            };
+            xhr.send();
+        }
+
+        function displayRandomLinks() {
+            const prefix = "https://www.youtube.com/watch?v=";
+            const ids = Array.from({ length: 11 }, () => generateRandomString(11));
+            const container = document.getElementById('links-container');
+
+            ids.forEach(randomString => {
+                let url = prefix + randomString;
+
+                validateYouTubeLink(url, function(isValid) {
+                    if (isValid) {
+                        const linkElement = document.createElement('a');
+                        linkElement.href = url;
+                        linkElement.target = "_blank";
+                        linkElement.textContent = url;
+                        container.appendChild(linkElement);
+                        container.appendChild(document.createElement('br'));
+                    } else {
+                        const invalidText = document.createElement('p');
+                        invalidText.textContent = 'Invalid YouTube link: ' + url;
+                        container.appendChild(invalidText);
+                    }
+                });
+            });
+        }
+
+        displayRandomLinks();
+    </script>
+</body>
+</html>
